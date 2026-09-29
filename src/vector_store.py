@@ -85,17 +85,36 @@ class VectorStore:
     def is_empty(self) -> bool:
         return self.index is None or self.index.ntotal == 0
 
-    def search_dense(self, query_embedding: np.ndarray, top_k: int = 20) -> List[Tuple[int, float]]:
-        """Dense similarity search using FAISS."""
+    def _get_dense_rankings(self, query_embedding: np.ndarray, top_k: int = 20) -> List[Tuple[int, float]]:
+        """Internal helper for raw FAISS similarity search returning (idx, score) tuples."""
+        if self.is_empty():
+            return []
         k = min(top_k, self.index.ntotal)
         scores, indices = self.index.search(query_embedding, k)
         return [(int(idx), float(score)) for score, idx in zip(scores[0], indices[0]) if idx >= 0]
 
+    def search_dense(self, query_embedding: np.ndarray, top_k: int = 5) -> List[Dict[str, Any]]:
+        """
+        Dense similarity search using FAISS.
+        Returns List of chunk metadata dicts with similarity_score attached.
+        """
+        rankings = self._get_dense_rankings(query_embedding, top_k=top_k)
+        results = []
+        for idx, score in rankings:
+            if idx < 0 or idx >= len(self.metadata):
+                continue
+            chunk_data = dict(self.metadata[idx])
+            chunk_data["similarity_score"] = float(score)
+            results.append(chunk_data)
+        return results
+
     def search_sparse(self, query_text: str, top_k: int = 20) -> List[Tuple[int, float]]:
-        """Sparse BM25 search."""
+        """Sparse BM25 search returning (idx, bm25_score) tuples."""
         if not self.bm25:
             return []
         tokens = self.tokenize(query_text)
+        if not tokens:
+            return []
         scores = self.bm25.get_scores(tokens)
         top_indices = np.argsort(scores)[::-1][:top_k]
         return [(int(idx), float(scores[idx])) for idx in top_indices if scores[idx] > 0]
@@ -119,7 +138,7 @@ class VectorStore:
         fetch_k = min(top_k * 4, self.index.ntotal)
 
         # 1. Retrieve Dense candidate rankings
-        dense_hits = self.search_dense(query_embedding, top_k=fetch_k)
+        dense_hits = self._get_dense_rankings(query_embedding, top_k=fetch_k)
         
         # 2. Retrieve Sparse BM25 candidate rankings
         sparse_hits = self.search_sparse(query_text, top_k=fetch_k)
@@ -140,7 +159,6 @@ class VectorStore:
             return []
 
         # 4. Maximal Marginal Relevance (MMR) for Result Diversity
-        final_indices = []
         candidate_indices = [idx for idx, _ in sorted_candidates]
 
         if use_mmr and self.embeddings is not None and len(candidate_indices) > top_k:
@@ -182,6 +200,8 @@ class VectorStore:
         # 5. Format results
         results = []
         for idx in final_indices:
+            if idx < 0 or idx >= len(self.metadata):
+                continue
             chunk_data = dict(self.metadata[idx])
             # Dense score as primary similarity score metric
             dense_score = float(np.dot(query_embedding[0], self.embeddings[idx])) if self.embeddings is not None else 0.0
