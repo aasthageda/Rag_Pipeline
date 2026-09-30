@@ -1,6 +1,40 @@
 # Production-Grade PDF Retrieval-Augmented Generation (RAG) Pipeline
 
-An advanced, production-ready RAG pipeline engineered for document extraction, SHA-256 deduplication, text cleaning, semantic paragraph chunking, dense + sparse hybrid vector indexing, MMR diversification, multi-LLM synthesis, and verified **Document Name & Page Citations**.
+An advanced, production-ready RAG pipeline engineered for PDF document extraction, SHA-256 deduplication, text cleaning, semantic paragraph chunking, dense + sparse hybrid vector indexing, MMR diversification, multi-LLM synthesis, and verified **Document Name & Page Citations**.
+
+---
+
+## 🎨 User Interface Showcase
+
+### 1. Interactive RAG Query & Citation System
+![RAG Dashboard Interface](docs/screenshots/rag_dashboard_preview.jpg)
+
+### 2. Hybrid Vector Database Explorer
+![Vector Database Explorer](docs/screenshots/vector_explorer_preview.jpg)
+
+---
+
+## 🐳 Accessing & Running the Docker Image from GitHub
+
+The Docker image for this project is automatically built and published to **GitHub Container Registry (GHCR)** via GitHub Actions.
+
+### 1. Pull the Docker Image from GHCR
+```bash
+docker pull ghcr.io/aasthageda/rag_pipeline:latest
+```
+
+### 2. Run the Container locally
+```bash
+docker run -d -p 8501:8501 --name rag_app ghcr.io/aasthageda/rag_pipeline:latest
+```
+
+### 3. Open the Dashboard in your Browser
+👉 **[http://localhost:8501](http://localhost:8501)**
+
+### 4. Run via Docker Compose (Alternative)
+```bash
+docker compose up -d
+```
 
 ---
 
@@ -12,7 +46,7 @@ graph TD
     B --> C["🧩 Semantic Paragraph Chunker (TextChunker)"]
     C --> D["🔠 SentenceTransformer Dense Embeddings"]
     C --> E["🔤 BM25 Lexical Corpus Tokenizer"]
-    D --> F["⚡ FAISS Vector Index (IndexFlatIP)"]
+    D --> F["⚡ FAISS Dense Vector Index (IndexFlatIP)"]
     E --> G["⚡ BM25 Sparse Index"]
     H["❓ User Query"] --> I["🔠 Dense Query Vector"]
     H --> J["🔤 Sparse Query Tokens"]
@@ -48,10 +82,14 @@ graph TD
 
 ```
 Rag_Pipeline/
-├── README.md                 # Project documentation
+├── README.md                 # Project documentation with UI screenshots & GHCR guide
 ├── requirements.txt           # Python dependencies
+├── Dockerfile                 # Multi-stage production container image
+├── docker-compose.yml         # Container orchestration manifest
 ├── cli.py                     # Command-line interface with UTF-8 support
 ├── app.py                     # Interactive Streamlit Web Dashboard
+├── docs/
+│   └── screenshots/           # High-resolution UI screenshots
 ├── data/
 │   └── documents/             # PDF research documents
 ├── vector_db/
@@ -74,7 +112,7 @@ Rag_Pipeline/
 
 ## ⚡ Quick Start Guide
 
-### 1. Run Ingestion with Deduplication & Hybrid Indexing
+### 1. Ingest PDFs & Build Hybrid Index
 ```bash
 python cli.py --ingest
 ```
