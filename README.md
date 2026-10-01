@@ -4,15 +4,7 @@ An advanced, production-ready RAG pipeline engineered for PDF document extractio
 
 ---
 
-## 🎨 User Interface Showcase
 
-### 1. Interactive RAG Query & Citation System
-![RAG Dashboard Interface](docs/screenshots/rag_dashboard_preview.jpg)
-
-### 2. Hybrid Vector Database Explorer
-![Vector Database Explorer](docs/screenshots/vector_explorer_preview.jpg)
-
----
 
 ## 🐳 Accessing & Running the Docker Image from GitHub
 
