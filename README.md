@@ -4,7 +4,11 @@ An advanced, production-ready RAG pipeline engineered for PDF document extractio
 
 ---
 
+## User Interface
+<img width="1917" height="862" alt="image" src="https://github.com/user-attachments/assets/f21fa543-eb8c-443e-a499-170e5087ecfd" />
 
+
+---
 
 ## 🐳 Accessing & Running the Docker Image from GitHub
 
@@ -19,11 +23,7 @@ docker pull ghcr.io/aasthageda/rag_pipeline:latest
 ```bash
 docker run -d -p 8501:8501 --name rag_app ghcr.io/aasthageda/rag_pipeline:latest
 ```
-
-### 3. Open the Dashboard in your Browser
-👉 **[http://localhost:8501](http://localhost:8501)**
-
-### 4. Run via Docker Compose (Alternative)
+### 3. Run via Docker Compose (Alternative)
 ```bash
 docker compose up -d
 ```
